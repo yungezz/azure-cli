@@ -85,6 +85,7 @@ set PYTHON_EXE=%PYTHON_DIR%\python.exe
 robocopy %PYTHON_DIR% %BUILDING_DIR% /s /NFL /NDL
 
 :: Build & install all the packages with bdist_wheel
+%BUILDING_DIR%\python.exe -m pip install --upgrade pip
 %BUILDING_DIR%\python.exe -m pip install wheel
 echo Building CLI packages...
 set CLI_SRC=%REPO_ROOT%\src
