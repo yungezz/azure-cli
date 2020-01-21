@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 import requests
-import adal
+from msal.exceptions import MsalError
 
 from msrest.authentication import Authentication
 
@@ -30,7 +30,7 @@ class AdalAuthentication(Authentication):  # pylint: disable=too-few-public-meth
             if in_cloud_console():
                 AdalAuthentication._log_hostname()
             raise err
-        except adal.AdalError as err:
+        except MsalError as err:
             # pylint: disable=no-member
             if in_cloud_console():
                 AdalAuthentication._log_hostname()

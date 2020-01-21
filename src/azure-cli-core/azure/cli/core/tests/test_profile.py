@@ -13,7 +13,7 @@ import re
 
 from copy import deepcopy
 
-from adal import AdalError
+from msal.exceptions import MsalError
 from azure.mgmt.resource.subscriptions.models import \
     (SubscriptionState, Subscription, SubscriptionPolicies, SpendingLimit)
 
@@ -1157,7 +1157,7 @@ class TestProfile(unittest.TestCase):
     def test_find_subscriptions_thru_username_password_with_account_disabled(self, mock_logger, mock_auth_context):
         cli = DummyCli()
         mock_auth_context.acquire_token_with_username_password.return_value = self.token_entry1
-        mock_auth_context.acquire_token.side_effect = AdalError('Account is disabled')
+        mock_auth_context.acquire_token.side_effect = MsalError('Account is disabled')
         mock_arm_client = mock.MagicMock()
         mock_arm_client.tenants.list.return_value = [TenantStub(self.tenant_id)]
         finder = SubscriptionFinder(cli, lambda _, _1, _2: mock_auth_context, None, lambda _: mock_arm_client)

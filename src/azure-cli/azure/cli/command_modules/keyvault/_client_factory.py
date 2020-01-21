@@ -22,11 +22,11 @@ def keyvault_data_plane_factory(cli_ctx, _):
     version = str(get_api_version(cli_ctx, ResourceType.DATA_KEYVAULT))
 
     def get_token(server, resource, scope):  # pylint: disable=unused-argument
-        import adal
+        from msal.exceptions import MsalError
         from azure.cli.core._profile import Profile
         try:
             return Profile(cli_ctx=cli_ctx).get_raw_token(resource)[0]
-        except adal.AdalError as err:
+        except MsalError as err:
             from knack.util import CLIError
             # pylint: disable=no-member
             if (hasattr(err, 'error_response') and

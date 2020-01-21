@@ -49,7 +49,7 @@ def _print_cur_configuration(file_config):
 
 
 def _config_env_public_azure(cli_ctx, _):
-    from adal.adal_error import AdalError
+    from msal.exceptions import MsalError
     from azure.cli.core.commands.client_factory import get_mgmt_service_client
     from azure.cli.core._profile import Profile
     from azure.cli.core.profiles import ResourceType
@@ -91,7 +91,7 @@ def _config_env_public_azure(cli_ctx, _):
                     tenant)
                 login_successful = True
                 logger.warning('Login successful!')
-            except AdalError as err:
+            except MsalError as err:
                 logger.error('Login error!')
                 logger.error(err)
 
