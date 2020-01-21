@@ -73,10 +73,16 @@ def get_access_token(cmd, subscription=None, resource=None, resource_type=None):
         resource = (resource or cmd.cli_ctx.cloud.endpoints.active_directory_resource_id)
     profile = Profile(cli_ctx=cmd.cli_ctx)
     creds, subscription, tenant = profile.get_raw_token(subscription=subscription, resource=resource)
+    import time
+    from datetime import datetime
+    expires_on = None
+    if creds[2].get('expires_in'):
+        expires_on = datetime.fromtimestamp(time.time()+creds[2].get('expires_in'))
+        expires_on = expires_on.strftime('%Y-%m-%d %H:%M:%S.%f')
     return {
         'tokenType': creds[0],
         'accessToken': creds[1],
-        'expiresOn': creds[2].get('expiresOn', 'N/A'),
+        'expiresOn': expires_on if expires_on else 'N/A',
         'subscription': subscription,
         'tenant': tenant
     }
@@ -102,7 +108,7 @@ def account_clear(cmd):
 def login(cmd, username=None, password=None, service_principal=None, tenant=None, allow_no_subscriptions=False,
           identity=False, use_device_code=False, use_cert_sn_issuer=None):
     """Log in to access Azure subscriptions"""
-    from adal.adal_error import AdalError
+    from msal.exceptions import MsalError
     import requests
 
     # quick argument usage check
@@ -145,7 +151,7 @@ def login(cmd, username=None, password=None, service_principal=None, tenant=None
             use_device_code=use_device_code,
             allow_no_subscriptions=allow_no_subscriptions,
             use_cert_sn_issuer=use_cert_sn_issuer)
-    except AdalError as err:
+    except MsalError as err:
         # try polish unfriendly server errors
         if username:
             msg = str(err)
