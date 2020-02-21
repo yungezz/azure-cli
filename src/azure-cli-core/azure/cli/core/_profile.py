@@ -522,6 +522,13 @@ class Profile(object):
             username, tenant, resource)
         return access_token
 
+    def get_ssh_certificate_for_resource(self, username, tenant, modulus, exponent):
+        tenant = tenant or 'common'
+        _, refresh_token, _, _ = self.get_refresh_token()
+        _, cert, _ = self._creds_cache.retrieve_ssh_certificate_for_user(
+            username, tenant, modulus, exponent, refresh_token)
+        return cert
+
     @staticmethod
     def _try_parse_msi_account_name(account):
         msi_info, user = account[_USER_ENTITY].get(_ASSIGNED_IDENTITY_INFO), account[_USER_ENTITY].get(_USER_NAME)
@@ -584,6 +591,13 @@ class Profile(object):
         return (auth_object,
                 str(account[_SUBSCRIPTION_ID]),
                 str(account[_TENANT_ID]))
+
+    def get_ssh_credentials(self, modulus, exponent):
+        account = self.get_subscription()
+        username = account[_USER_ENTITY][_USER_NAME]
+        return username, self.get_ssh_certificate_for_resource(
+            username, account[_TENANT_ID], modulus, exponent
+        )
 
     def get_refresh_token(self, resource=None,
                           subscription=None):
@@ -964,6 +978,29 @@ class CredsCache(object):
         if self.adal_token_cache.has_state_changed:
             self.persist_cached_creds()
         return (token_entry[_TOKEN_ENTRY_TOKEN_TYPE], token_entry[_ACCESS_TOKEN], token_entry)
+
+    def retrieve_ssh_certificate_for_user(self, username, tenant, modulus, exponent, refresh_token):
+        from azure.cli.core._msal import SSHCertificateClientApplication
+        scopes = ["https://pas.windows.net/CheckMyAccess/Linux/user_impersonation"]
+        tenant = tenant or 'organizations'
+        authority = self._ctx.cloud.endpoints.active_directory + '/' + tenant
+        app = SSHCertificateClientApplication(_CLIENT_ID, authority=authority)
+
+        jwk = {
+            "kty": "RSA",
+            "n": modulus,
+            "e": exponent,
+            "kid": str(hash((modulus, exponent)))
+        }
+
+        json_jwk = json.dumps(jwk)
+
+        result = app.acquire_token_silent(scopes, None,
+                                          data={"token_type": "ssh-cert", "req_cnf": json_jwk, "key_id": jwk["kid"]},
+                                          params={"dc": "prod-wst-test1", "slice": "test", "sshcrt": "true"},
+                                          refresh_token=refresh_token)
+
+        return (result["token_type"], result["access_token"], result)
 
     def retrieve_token_for_service_principal(self, sp_id, resource, tenant, use_cert_sn_issuer=False):
         self.load_adal_token_cache()
