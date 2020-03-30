@@ -13,7 +13,12 @@ class SSHCertificateClientApplication(ClientApplication):
             self, authority, scopes, **kwargs):
         refresh_token = kwargs.get('refresh_token', None)
         client = self._build_client(self.client_credential, authority)
-        kwargs.pop('refresh_token')
+        if 'refresh_token' in kwargs:
+            kwargs.pop('refresh_token')
+        if 'force_refresh' in kwargs:
+            kwargs.pop('force_refresh')
+        if 'correlation_id' in kwargs:
+            kwargs.pop('correlation_id')
         response = client.obtain_token_by_refresh_token(refresh_token, scope=scopes, **kwargs)
         if "error" in response:
             raise CLIError(response["error"])
