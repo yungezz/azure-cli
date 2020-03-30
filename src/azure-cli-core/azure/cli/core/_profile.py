@@ -997,7 +997,6 @@ class CredsCache(object):
 
         result = app.acquire_token_silent(scopes, None,
                                           data={"token_type": "ssh-cert", "req_cnf": json_jwk, "key_id": jwk["kid"]},
-                                          params={"dc": "prod-wst-test1", "slice": "test", "sshcrt": "true"},
                                           refresh_token=refresh_token)
 
         return (result["token_type"], result["access_token"], result)
