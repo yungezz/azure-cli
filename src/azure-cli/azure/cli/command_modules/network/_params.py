@@ -818,7 +818,9 @@ def load_arguments(self, _):
         c.argument('private_connection_resource_id', help='The resource id of the private endpoint to connect to')
         c.argument('group_ids', nargs='+', options_list=[c.deprecate(target='--group-ids', redirect='--group-id'), '--group-id'],
                    help='The ID of the group obtained from the remote resource that this private endpoint should connect to. '
-                        'You can use "az network private-link-resource list" to obtain the supported group ids. You must provide this except for PrivateLinkService')
+                        'To view the list of supported group ids, you can use "az network private-link-resource list" or view the Azure services DNS zone configuration '
+                        'at https://docs.microsoft.com/en-us/azure/private-link/private-endpoint-dns#azure-services-dns-zone-configuration. '
+                        'You must provide this parameter except for PrivateLinkService.')
         c.argument('request_message', help='A message passed to the owner of the remote resource with this connection request. Restricted to 140 chars.')
         c.argument('manual_request', help="Use manual request to establish the connection. Configure it as 'true' when you don't have access to the subscription of private link service.", arg_type=get_three_state_flag())
         c.argument('connection_name', help='Name of the private link service connection.')
